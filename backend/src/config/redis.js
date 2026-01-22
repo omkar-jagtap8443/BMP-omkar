@@ -1,8 +1,7 @@
 import Redis from "ioredis";
 
-console.log("🔍 Redis URL:", process.env.REDIS_URL);
-
 export const redis = new Redis(process.env.REDIS_URL, {
+  tls: {},                 // TLS enable (Upstash needs this)
   maxRetriesPerRequest: 3,
   retryStrategy(times) {
     if (times > 3) return null;
@@ -11,7 +10,7 @@ export const redis = new Redis(process.env.REDIS_URL, {
 });
 
 redis.on("connect", () => {
-  console.log("✅ Redis connected");
+  console.log("✅ Redis connected (Upstash)");
 });
 
 redis.on("error", (err) => {
