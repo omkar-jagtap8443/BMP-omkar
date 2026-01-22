@@ -5,7 +5,10 @@ import travellerRoutes from "./routes/traveller.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", // replace with your frontend URL
+  credentials: true
+}));
 app.use(express.json());
 
 app.get("/health",(req,res)=>{
