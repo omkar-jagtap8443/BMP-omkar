@@ -9,7 +9,7 @@ import BottomFeatures from '../components/user/BottomFeatures';
 
 const UserDashboard = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50">
       <DashboardHeader />
       <MobileStats />
       
