@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { createOrder } from '../../api/orders';
+import { geocodeAddress } from '../../api/geocode';
 
 const ParcelForm = () => {
   const [formData, setFormData] = useState({
@@ -15,11 +17,40 @@ const ParcelForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // API integration will happen here
-    // axios.post('/api/order/create', formData)
-    console.log('Form submitted:', formData);
+    try {
+      // Geocode pickup and drop addresses
+      const pickupCoords = await geocodeAddress(formData.pickupAddress || formData.pickupLocation);
+      const dropCoords = await geocodeAddress(formData.dropAddress || formData.dropLocation);
+      const orderData = {
+        userId: "demo-user-id", // Replace with actual user id
+        pickup: pickupCoords,
+        drop: dropCoords,
+        item: {
+          name: formData.itemName,
+          weight: formData.itemWeight,
+          description: formData.itemDescription,
+          pickupLocation: formData.pickupLocation,
+          pickupAddress: formData.pickupAddress,
+          dropLocation: formData.dropLocation,
+          dropAddress: formData.dropAddress
+        }
+      };
+      const response = await createOrder(orderData);
+      alert('Order created successfully!');
+      setFormData({
+        pickupLocation: '',
+        pickupAddress: '',
+        dropLocation: '',
+        dropAddress: '',
+        itemName: '',
+        itemWeight: '',
+        itemDescription: ''
+      });
+    } catch (error) {
+      alert('Failed to create order: ' + error.message);
+    }
   };
 
   return (
