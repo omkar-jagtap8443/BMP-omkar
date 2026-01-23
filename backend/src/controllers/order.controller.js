@@ -1,9 +1,35 @@
+/**
+ * GET NEARBY ORDERS FOR TRAVELLER
+ * Returns all orders in SEARCHING state for traveller's H3 cell
+ */
+export const getNearbyOrders = async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (!lat || !lng) return res.status(400).json({ error: "lat/lng required" });
+    const cell = h3.latLngToCell(Number(lat), Number(lng), 9);
+    const disk = h3.gridDisk(cell, 5); // 5km radius (approx)
+    // Find all orders in SEARCHING state
+    const result = await db.query("SELECT * FROM orders WHERE status = $1", [ORDER_STATUS.SEARCHING]);
+    // Filter orders whose pickup cell is within the disk
+    const orders = result.rows.filter(row => {
+      const pickup = row.data.pickup;
+      if (!pickup) return false;
+      const orderCell = h3.latLngToCell(pickup.lat, pickup.lng, 9);
+      return disk.includes(orderCell);
+    });
+    res.json({ orders });
+  } catch (err) {
+    console.error("Get nearby orders error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 import { db } from "../config/db.js";
 import { ORDER_STATUS } from "../constants/orderStatus.js";
 import { v4 as uuidv4 } from "uuid";
 import validator from "validator";
 import * as h3 from "h3-js";
 import { redis } from "../config/redis.js";
+import { onlineTravellers } from "../sockets/order.socket.js";
 
 /**
  * USER CREATES ORDER
@@ -43,9 +69,21 @@ export const createOrder = async (req, res) => {
     console.log("📍 Pickup cell:", pickupCell);
     console.log("🚚 Nearby travellers:", nearbyTravellers);
 
-    // (Socket emit yahin aayega later)
+
+    // Emit socket event to each online nearby traveller
     nearbyTravellers.forEach(tid => {
-      console.log(`📢 Order ${orderId} sent to traveller ${tid}`);
+      const tSocket = onlineTravellers.get(tid);
+      if (tSocket) {
+        tSocket.emit("order:notification", {
+          orderId,
+          pickup,
+          drop,
+          item,
+        });
+        console.log(`📢 Order ${orderId} sent to traveller ${tid} via socket`);
+      } else {
+        console.log(`⚠️ Traveller ${tid} not online (no socket)`);
+      }
     });
 
     return res.json({
