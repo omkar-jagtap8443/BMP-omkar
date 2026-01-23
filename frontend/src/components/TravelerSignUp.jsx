@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
+import bcrypt from "bcryptjs";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -41,26 +42,33 @@ export default function TravelerSignUp() {
       return;
     }
     setLoading(true);
-    const { data, error: supaError } = await supabase
-      .from("travellers")
-      .insert([
-        {
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-          alt_phone: form.altPhone,
-          city: form.city,
-          state: form.state,
-        },
-      ])
-      .select();
-    setLoading(false);
-    if (supaError) {
-      setError(supaError.message);
-      return;
+    try {
+      const hashedPassword = await bcrypt.hash(form.password, 10);
+      const { data, error: supaError } = await supabase
+        .from("travellers")
+        .insert([
+          {
+            name: form.name,
+            phone: form.phone,
+            email: form.email,
+            alt_phone: form.altPhone,
+            city: form.city,
+            state: form.state,
+            password: hashedPassword,
+          },
+        ])
+        .select();
+      setLoading(false);
+      if (supaError) {
+        setError(supaError.message);
+        return;
+      }
+      localStorage.setItem("travellerId", data[0].id);
+      navigate("/traveler");
+    } catch (err) {
+      setLoading(false);
+      setError("Something went wrong. Please try again.");
     }
-    localStorage.setItem("travellerId", data[0].id);
-    navigate("/traveler");
   };
 
   return (
