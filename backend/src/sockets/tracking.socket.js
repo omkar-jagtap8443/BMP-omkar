@@ -1,5 +1,7 @@
-export default (io, socket) => {
-  socket.on("location", data => {
-    io.emit(`track:${data.orderId}`, data);
+export default function(io) {
+  io.on("connection", (socket) => {
+    socket.on("location", data => {
+      io.emit(`track:${data.orderId}`, data);
+    });
   });
-};
+}

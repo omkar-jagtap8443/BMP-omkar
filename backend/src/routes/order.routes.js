@@ -8,6 +8,9 @@ import {
 
 const router = express.Router();
 
+import { getNearbyOrders } from "../controllers/order.controller.js";
+
+router.get("/nearby", getNearbyOrders);
 router.post("/", createOrder);
 router.post("/accept", acceptOrder);
 router.post("/verify-otp", verifyOTP);
