@@ -1,10 +1,15 @@
+
+import { useEffect, useState } from "react";
 import { fetchNearbyOrders } from '../api/fetchNearbyOrders';
 import TravelerStatusToggle from "../components/traveler/TravelerStatusToggle.jsx";
-import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import OrderList from '../components/traveler/OrderList';
 import { updateTravellerLocation } from '../api/travellers';
 import { acceptOrder } from '../api/acceptOrder';
+
+// Request location on mount to trigger location popup after login
+// (must be after useState is defined)
+
 
 const TravelerDashboard = () => {
   const [online, setOnline] = useState(false);
@@ -66,7 +71,7 @@ const TravelerDashboard = () => {
             price: order.data?.item?.price || "",
             timeAgo: "Just now"
           }));
-          setOrders(mapped);
+          setOrders(mapped.reverse());
         })
         .catch(e => console.error("Failed to fetch nearby orders", e));
     }
@@ -89,7 +94,7 @@ const TravelerDashboard = () => {
       setOrderNotification(mappedOrder);
       setOrders(prev => {
         if (prev.some(o => o.id === mappedOrder.id)) return prev;
-        return [...prev, mappedOrder];
+        return [mappedOrder, ...prev];
       });
     });
     return () => {
