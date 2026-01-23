@@ -22,9 +22,7 @@ const Navbar = () => {
 
           <div className="hidden md:block flex items-center space-x-4">
             <a href="/traveler-signup" className="bg-white border border-blue-600 text-blue-600 px-6 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-blue-50">Sign Up</a>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
-              Login
-            </button>
+            <a href="/traveler-login" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">Login</a>
           </div>
 
           <div className="md:hidden">
@@ -46,9 +44,7 @@ const Navbar = () => {
               <a href="#" className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium">Features</a>
               <a href="#" className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium">How It Works</a>
               <a href="/traveler-signup" className="w-full block text-left bg-white border border-blue-600 text-blue-600 px-3 py-2 rounded-lg text-base font-medium mt-2 mb-2">Sign Up</a>
-              <button className="w-full text-left bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-base font-medium mt-2">
-                Login
-              </button>
+              <a href="/traveler-login" className="w-full block text-left bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-base font-medium mt-2">Login</a>
             </div>
           </div>
         )}
