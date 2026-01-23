@@ -1,40 +1,6 @@
 import OrderCard from './OrderCard';
 
-const OrderList = () => {
-  // Mock data - will be replaced with API call
-  const orders = [
-    {
-      id: 1,
-      itemName: 'Electronics Package',
-      itemDescription: 'Laptop and accessories in protective case',
-      pickupLocation: 'New York, NY',
-      dropLocation: 'London, UK',
-      itemWeight: 3.5,
-      price: 85,
-      timeAgo: '2 hours ago'
-    },
-    {
-      id: 2,
-      itemName: 'Documents',
-      itemDescription: 'Important business documents in sealed envelope',
-      pickupLocation: 'New York, NY',
-      dropLocation: 'Paris, FR',
-      itemWeight: 0.5,
-      price: 45,
-      timeAgo: '4 hours ago'
-    },
-    {
-      id: 3,
-      itemName: 'Gift Package',
-      itemDescription: 'Birthday gift for family member',
-      pickupLocation: 'Boston, MA',
-      dropLocation: 'London, UK',
-      itemWeight: 2.0,
-      price: 60,
-      timeAgo: '6 hours ago'
-    }
-  ];
-
+const OrderList = ({ orders = [] }) => {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
       <div className="flex items-center justify-between mb-6">
