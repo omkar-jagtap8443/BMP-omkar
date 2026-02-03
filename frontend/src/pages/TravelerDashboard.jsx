@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchNearbyOrders } from '../api/fetchNearbyOrders';
 import TravelerStatusToggle from "../components/traveler/TravelerStatusToggle.jsx";
 import io from "socket.io-client";
@@ -18,43 +18,56 @@ const TravelerDashboard = () => {
   const [location, setLocation] = useState({ lat: null, lng: null });
   const [travellerId, setTravellerId] = useState(() => localStorage.getItem('travellerId') || 'demo-traveller');
   const socket = io("http://localhost:3000", { withCredentials: true, query: { travellerId } });
+  const watchIdRef = useRef(null);
 
   useEffect(() => {
-    console.log("useEffect [online] triggered", { online, location });
     if (online) {
-      // Prompt for location if not set
-      if (!location.lat || !location.lng) {
-        if (navigator.geolocation) {
-          console.log("Requesting geolocation...");
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              const { latitude, longitude } = pos.coords;
-              console.log('Got location:', latitude, longitude);
-              setLocation({ lat: latitude, lng: longitude });
+      if (navigator.geolocation) {
+        // Start watching position
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            console.log('Got location:', latitude, longitude);
+            setLocation({ lat: latitude, lng: longitude });
+            try {
               await updateTravellerLocation(travellerId, latitude, longitude);
-              console.log('Location sent to backend');
-              socket.emit("traveller:online");
-            },
-            (err) => {
-              console.error("Geolocation error:", err);
-              alert("Location permission required to go online.");
-              setOnline(false);
+              // Only emit online the first time
+              if (!watchIdRef.current._onlineEmitted) {
+                socket.emit("traveller:online");
+                watchIdRef.current._onlineEmitted = true;
+              }
+            } catch (e) {
+              // Optionally handle error
             }
-          );
-        } else {
-          alert("Geolocation is not supported by your browser.");
-          setOnline(false);
-        }
+          },
+          (err) => {
+            console.error("Geolocation error:", err);
+            alert("Location permission required to go online.");
+            setOnline(false);
+          },
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+        );
       } else {
-        console.log('Using existing location:', location);
-        updateTravellerLocation(travellerId, location.lat, location.lng);
-        socket.emit("traveller:online");
+        alert("Geolocation is not supported by your browser.");
+        setOnline(false);
       }
     } else {
+      // Stop watching position
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
       socket.emit("traveller:offline");
     }
+    // Cleanup on unmount
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
     // eslint-disable-next-line
-  }, [online]);
+  }, [online, travellerId]);
 
   // Fetch nearby orders from backend when online and location is set
   useEffect(() => {
